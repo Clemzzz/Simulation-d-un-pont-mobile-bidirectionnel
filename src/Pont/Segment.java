@@ -6,12 +6,16 @@ public class Segment {
     private final int id;
     private final ReentrantLock verrou;
 
-
-    //pour affichage console
+    // pour affichage console
     private Integer idVehiculeOccupant;
 
+    public Segment(int id) {
+        this.id = id;
+        this.verrou = new ReentrantLock();
+        this.idVehiculeOccupant = null;
+    }
 
-    public Segment(int id, ReentrantLock verrou, Integer idVehiculeOccupant){
+    public Segment(int id, ReentrantLock verrou, Integer idVehiculeOccupant) {
         this.id = id;
         this.verrou = new ReentrantLock();
         this.idVehiculeOccupant = null;
@@ -21,7 +25,7 @@ public class Segment {
      * Réservation bloquante (Typiquement pour une Voiture)
      * Le thread s'endort ici tant que le verrou n'est pas disponible.
      */
-    public void reserver(int idVehicule){
+    public void reserver(int idVehicule) {
         verrou.lock();
         idVehiculeOccupant = idVehicule;
     }
@@ -30,7 +34,6 @@ public class Segment {
      * Réservation conditionnelle (Typiquement pour un Camion)
      * @return true si le verrou a été acquis, false s'il était déjà pris.
      */
-
     public boolean tryReserver(int idVehicule) {
         if (verrou.tryLock()) {
             idVehiculeOccupant = idVehicule;
@@ -43,8 +46,7 @@ public class Segment {
     /**
      * Libération du segment par le véhicule sortant
      */
-
-    public void liberer(){
+    public void liberer() {
         this.idVehiculeOccupant = null;
         verrou.unlock();
     }
@@ -55,5 +57,9 @@ public class Segment {
 
     public Integer getIdOccupant() {
         return this.idVehiculeOccupant;
+    }
+
+    public int getId() {
+        return this.id;
     }
 }
