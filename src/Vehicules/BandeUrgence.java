@@ -13,6 +13,7 @@ public class BandeUrgence {
     private static final Map<Pont, BandeUrgence> INSTANCES = Collections.synchronizedMap(new WeakHashMap<>());
 
     private final List<Vehicule> vehiculesGares = new ArrayList<>();
+    private final List<VehiculePrioritaire> prioritairesActifs = new ArrayList<>();
     private int urgences = 0;
     private int enCirculation = 0;
 
@@ -77,5 +78,17 @@ public class BandeUrgence {
 
     public synchronized List<Vehicule> getVehiculesGares() {
         return new ArrayList<>(vehiculesGares);
+    }
+
+    public synchronized void ajouterPrioritaireActif(VehiculePrioritaire vp) {
+        prioritairesActifs.add(vp);
+    }
+
+    public synchronized void retirerPrioritaireActif(VehiculePrioritaire vp) {
+        prioritairesActifs.remove(vp);
+    }
+
+    public synchronized List<VehiculePrioritaire> getPrioritairesActifs() {
+        return new ArrayList<>(prioritairesActifs);
     }
 }

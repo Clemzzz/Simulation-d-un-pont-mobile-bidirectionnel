@@ -35,13 +35,9 @@ public class ControleCirculation {
         compteurs.put(sens, lire(compteurs, sens) + delta);
     }
 
-    // Vérifie si ce sens peut entrer
+    // Vérifie si ce sens peut entrer (les deux sens peuvent circuler en même temps sauf blocage par convoi ou prioritaire)
     private boolean peutEntrer(String sens) {
-        String oppose = Vehicule.sensOppose(sens);
-        return prioritairesEnApproche == 0
-                && lire(blocages, sens) == 0
-                && lire(surPont, oppose) == 0
-                && (lire(enAttente, oppose) == 0 || lire(blocages, oppose) > 0 || sensPrioritaire.equals(sens));
+        return prioritairesEnApproche == 0 && lire(blocages, sens) == 0;
     }
 
     // Attend son tour pour entrer

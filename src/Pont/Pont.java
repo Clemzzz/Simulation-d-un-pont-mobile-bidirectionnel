@@ -1,5 +1,7 @@
 package Pont;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -9,7 +11,11 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Pont {
     private EtatPont etat;
     private int nbVehiculesEngages;
-    private Segment[] segments;
+    private boolean demandeOuvertureEnCours;
+
+    // Un tableau de segments par sens pour permettre la circulation simultanée dans les deux sens
+    private Segment[] segmentsGaucheDroite;
+    private Segment[] segmentsDroiteGauche;
 
     private ReentrantLock verrouGlobal;
     private Condition autoriserEntree;
@@ -24,10 +30,13 @@ public class Pont {
     public Pont(int nbSegments) {
         this.etat = EtatPont.FERME;
         this.nbVehiculesEngages = 0;
+        this.demandeOuvertureEnCours = false;
 
-        this.segments = new Segment[nbSegments];
+        this.segmentsGaucheDroite = new Segment[nbSegments];
+        this.segmentsDroiteGauche = new Segment[nbSegments];
         for (int i = 0; i < nbSegments; i++) {
-            this.segments[i] = new Segment(i);
+            this.segmentsGaucheDroite[i] = new Segment(i);
+            this.segmentsDroiteGauche[i] = new Segment(i);
         }
 
         this.verrouGlobal = new ReentrantLock();
@@ -36,7 +45,8 @@ public class Pont {
 
         this.heureFermetureComplete = 0;
         this.heureProchaineOuverture = 0;
-        this.timerOuverture = new Timer();
+        // Timer en mode démon (true) pour que le programme puisse s'arrêter tout seul
+        this.timerOuverture = new Timer(true);
         this.fileAttenteFIFO = null;
     }
 
@@ -44,7 +54,7 @@ public class Pont {
     public void entrer() throws InterruptedException {
         verrouGlobal.lock();
         try {
-            while (this.etat != EtatPont.FERME) {
+            while (this.etat != EtatPont.FERME || this.demandeOuvertureEnCours) {
                 autoriserEntree.await();
             }
             this.nbVehiculesEngages++;
@@ -70,10 +80,21 @@ public class Pont {
     public void demanderOuverture() throws InterruptedException {
         verrouGlobal.lock();
         try {
-            this.etat = EtatPont.OUVERTURE;
+            // Bloque les nouvelles entrées et attend que le pont soit vide avant de passer à OUVERTURE
+            this.demandeOuvertureEnCours = true;
             while (this.nbVehiculesEngages > 0) {
                 pontVide.await();
             }
+            this.etat = EtatPont.OUVERTURE;
+        } finally {
+            verrouGlobal.unlock();
+        }
+
+        // Petite pause pour qu'on voie l'état OUVERTURE à l'écran
+        Thread.sleep(1000);
+
+        verrouGlobal.lock();
+        try {
             this.etat = EtatPont.OUVERT;
         } finally {
             verrouGlobal.unlock();
@@ -85,7 +106,21 @@ public class Pont {
         verrouGlobal.lock();
         try {
             this.etat = EtatPont.FERMETURE;
+        } finally {
+            verrouGlobal.unlock();
+        }
+
+        // Petite pause pour qu'on voie l'état FERMETURE à l'écran
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        verrouGlobal.lock();
+        try {
             this.etat = EtatPont.FERME;
+            this.demandeOuvertureEnCours = false;
 
             // Enregistrement de l'heure de fermeture et calcul de la prochaine ouverture (+1 min)
             this.heureFermetureComplete = System.currentTimeMillis();
@@ -117,6 +152,13 @@ public class Pont {
         this.fileAttenteFIFO = fileAttenteFIFO;
     }
 
+    public List<?> getFileAttenteFIFO() {
+        if (this.fileAttenteFIFO == null) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(this.fileAttenteFIFO);
+    }
+
     public EtatPont getEtat() {
         return this.etat;
     }
@@ -125,12 +167,21 @@ public class Pont {
         return this.nbVehiculesEngages;
     }
 
+    // Récupère un segment selon le sens de circulation
+    public Segment getSegment(String sens, int index) {
+        if ("DROITE_GAUCHE".equals(sens)) {
+            return this.segmentsDroiteGauche[index];
+        }
+        return this.segmentsGaucheDroite[index];
+    }
+
+    // Par défaut (sens Gauche -> Droite)
     public Segment getSegment(int index) {
-        return this.segments[index];
+        return this.segmentsGaucheDroite[index];
     }
 
     public int getNbSegments() {
-        return this.segments.length;
+        return this.segmentsGaucheDroite.length;
     }
 
     public long getHeureFermetureComplete() {

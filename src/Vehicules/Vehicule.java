@@ -72,10 +72,10 @@ public abstract class Vehicule extends Thread {
         return ControleCirculation.de(pont);
     }
 
-    // Segment du pont à cette position
+    // Segment du pont à cette position (selon le sens du véhicule)
     protected Segment segment(int position) {
         int index = GAUCHE_DROITE.equals(sens) ? position : pont.getNbSegments() - 1 - position;
-        return pont.getSegment(index);
+        return pont.getSegment(sens, index);
     }
 
     protected boolean reserver(int position) {

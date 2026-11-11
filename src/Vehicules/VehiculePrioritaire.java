@@ -40,10 +40,15 @@ public class VehiculePrioritaire extends Vehicule {
                 signalerPriorite();
                 try {
                     bande.attendreArretVehicules();
-                    positionActuelle = 0;
-                    while (positionActuelle < pont.getNbSegments()) {
-                        sleep(delaiPas);
-                        positionActuelle++;
+                    bande.ajouterPrioritaireActif(this);
+                    try {
+                        positionActuelle = 0;
+                        while (positionActuelle < pont.getNbSegments()) {
+                            sleep(delaiPas);
+                            positionActuelle++;
+                        }
+                    } finally {
+                        bande.retirerPrioritaireActif(this);
                     }
                 } finally {
                     bande.finUrgence();

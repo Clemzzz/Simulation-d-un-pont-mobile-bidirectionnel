@@ -1,5 +1,11 @@
 package Pont;
 
+import java.util.List;
+import Bateaux.Bateau;
+import Vehicules.BandeUrgence;
+import Vehicules.Vehicule;
+import Vehicules.VehiculePrioritaire;
+
 public class MoteurAffichageConsole extends Thread {
     private Pont pont;
 
@@ -26,18 +32,69 @@ public class MoteurAffichageConsole extends Thread {
         // Replacer le curseur en haut à gauche
         System.out.print("\033[H");
 
-        // Affichage de l'état général du pont aux lignes 1 et 2
+        // Lignes 1 et 2 : Etat général du pont
         System.out.print("\033[1;1HEtat du pont : " + pont.getEtat());
         System.out.print("\033[2;1HVehicules sur le pont : " + pont.getNbVehiculesEngages());
 
-        // Dessin des segments du pont à la ligne 4
-        System.out.print("\033[4;1H");
+        // Ligne 4 : Sens Gauche -> Droite
+        System.out.print("\033[4;1HSens GAUCHE -> DROITE : ");
         for (int i = 0; i < pont.getNbSegments(); i++) {
-            Segment s = pont.getSegment(i);
+            Segment s = pont.getSegment("GAUCHE_DROITE", i);
             if (s.estOccupe()) {
-                System.out.print("[ V" + s.getIdOccupant() + " ] ");
+                System.out.print("[ V" + s.getIdOccupant() + " -> ] ");
             } else {
                 System.out.print("[ Libre ] ");
+            }
+        }
+
+        // Ligne 5 : Sens Droite -> Gauche
+        System.out.print("\033[5;1HSens DROITE -> GAUCHE : ");
+        for (int i = 0; i < pont.getNbSegments(); i++) {
+            Segment s = pont.getSegment("DROITE_GAUCHE", i);
+            if (s.estOccupe()) {
+                System.out.print("[ <- V" + s.getIdOccupant() + " ] ");
+            } else {
+                System.out.print("[ Libre ] ");
+            }
+        }
+
+        // Ligne 7 : Bande d'urgence
+        BandeUrgence bande = BandeUrgence.de(pont);
+        List<Vehicule> gares = bande.getVehiculesGares();
+        System.out.print("\033[7;1HBande d'urgence       : ");
+        if (gares.isEmpty()) {
+            System.out.print("Aucun vehicule gare");
+        } else {
+            for (Vehicule v : gares) {
+                System.out.print(v.toString() + " ");
+            }
+        }
+
+        // Ligne 8 : Véhicules prioritaires
+        List<VehiculePrioritaire> prioritaires = bande.getPrioritairesActifs();
+        System.out.print("\033[8;1HVehicule prioritaire  : ");
+        if (prioritaires.isEmpty()) {
+            System.out.print("Aucun");
+        } else {
+            for (VehiculePrioritaire vp : prioritaires) {
+                System.out.print(vp.getCategorie() + "#" + vp.getIdVehicule()
+                        + " (" + vp.getSens() + ", segment " + (vp.getPositionActuelle() + 1) + ") ");
+            }
+        }
+
+        // Ligne 10 : Bateaux (en traversée et en file d'attente FIFO)
+        List<?> bateaux = pont.getFileAttenteFIFO();
+        System.out.print("\033[10;1HBateaux (file FIFO)   : ");
+        if (bateaux.isEmpty()) {
+            System.out.print("Aucun bateau");
+        } else {
+            for (Object obj : bateaux) {
+                if (obj instanceof Bateau) {
+                    Bateau b = (Bateau) obj;
+                    System.out.print("Bateau#" + b.getIdBateau() + "[" + b.getDirection() + " - " + b.getEtat() + "] ");
+                } else {
+                    System.out.print(obj.toString() + " ");
+                }
             }
         }
         System.out.println();
