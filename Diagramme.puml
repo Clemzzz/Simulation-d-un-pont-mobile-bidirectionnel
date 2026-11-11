@@ -1,0 +1,114 @@
+@startuml
+class Thread <<Java class>> {
+    +run()
+}
+
+class Main {
+    +main(args : String[])
+}
+
+enum EtatPont {
+    FERME
+    OUVERTURE
+    OUVERT
+    FERMETURE
+}
+
+class Pont {
+    -etat : EtatPont
+    -segments : Segment[]
+    -nbVehiculesEngages : int
+    +entrer()
+    +sortir()
+    +demanderOuverture()
+    +fermer()
+}
+
+class Segment {
+    -verrou : ReentrantLock
+    -idVehiculeOccupant : Integer
+    +tryReserver(id : int) : boolean
+    +liberer()
+}
+
+class BandeUrgence {
+    -vehiculesGares : List<Vehicule>
+    +garer(v : Vehicule)
+    +repartir(v : Vehicule)
+}
+
+class ControleCirculation {
+    +entrer(v : Vehicule)
+    +sortir(v : Vehicule)
+    +bloquerEntree(sens : String)
+}
+
+abstract class Vehicule {
+    #id : int
+    #sens : String
+    #taille : int
+    #positionActuelle : int
+    +run()
+    +avancer()
+    +cederPassage()
+}
+
+class Voiture {
+    taille = 1
+}
+
+class Camion {
+    taille = 2
+}
+
+class ConvoiExceptionnel {
+    taille = 4
+}
+
+class VehiculePrioritaire {
+    taille = 1
+    +signalerPriorite()
+}
+
+class Bateau {
+    -id : int
+    -direction : String
+    +run()
+}
+
+class GestionnaireTraficMaritime {
+    -fileAttenteFIFO : Queue<Bateau>
+    -timerOuverture : Timer
+    +ajouterBateau(b : Bateau)
+    +traiterFile()
+}
+
+class MoteurAffichageConsole {
+    -pont : Pont
+    +run()
+    -rafraichirEcran()
+}
+
+' Héritages (Threads)
+Thread <|-- Vehicule
+Thread <|-- Bateau
+Thread <|-- MoteurAffichageConsole
+
+' Héritages (Véhicules)
+Vehicule <|-- Voiture
+Vehicule <|-- Camion
+Vehicule <|-- ConvoiExceptionnel
+Vehicule <|-- VehiculePrioritaire
+
+' Compositions et Associations
+Pont *-- "*" Segment : divisé en N
+Pont --> "1" EtatPont : possède 4 états
+
+MoteurAffichageConsole --> "1" Pont : observe
+GestionnaireTraficMaritime --> "1" Pont : contrôle
+Vehicule --> "1" Pont : traverse
+Vehicule --> "1" ControleCirculation : attend son tour
+Vehicule --> "1" BandeUrgence : se gare
+Bateau --> "1" GestionnaireTraficMaritime : s'inscrit
+Main ..> Pont : lance la simulation
+@enduml
