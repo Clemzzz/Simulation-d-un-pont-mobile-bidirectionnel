@@ -1,7 +1,3 @@
-========================================================================
-PROJET R3.05 - Programmation Système : Simulation de Pont Mobile
-Binôme : Clément BAZIN - Tom MALHERBE
-========================================================================
 1. GESTION DES VOIES DU PONT
 - Ce qui a été fait :
   On a créé deux tableaux de segments (un pour chaque sens) pour que les
