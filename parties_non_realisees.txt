@@ -1,0 +1,21 @@
+========================================================================
+PROJET R3.05 - Programmation Système : Simulation de Pont Mobile
+Binôme : Clément BAZIN - Tom MALHERBE
+========================================================================
+1. GESTION DES VOIES DU PONT
+- Ce qui a été fait :
+  On a créé deux tableaux de segments (un pour chaque sens) pour que les
+  véhicules des deux côtés puissent traverser le pont en même temps.
+- Ce qui n'a pas été fait (le cas d'une seule voie) :
+  S'il n'y avait qu'une seule file de segments partagée, les véhicules en sens
+  inverse se bloqueraient face-à-face. Il aurait fallu faire une circulation
+  alternée avec des feux (un sens passe, puis l'autre).
+  On a préféré mettre 2 voies pour que les deux sens roulent en même temps.
+2. CAS DU VÉHICULE QUI ENTRE QUAND UN PRIORITAIRE ARRIVE
+Si une voiture passe la barrière d'entrée pile au moment où une ambulance
+ou un camion de pompiers arrive :
+- Les nouvelles entrées sont immédiatement bloquées.
+- Le véhicule prioritaire attend que toutes les voitures déjà engagées
+  se soient rangées sur la bande d'urgence avant de traverser.
+- Si une voiture venait juste de poser ses roues sur le pont, elle s'arrête
+  dès son premier pas et se gare avec les autres.
