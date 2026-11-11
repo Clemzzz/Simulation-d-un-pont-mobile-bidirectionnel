@@ -3,10 +3,8 @@ package Pont;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Segment {
-    private final int id;
-    private final ReentrantLock verrou;
-
-    // pour affichage console
+    private int id;
+    private ReentrantLock verrou;
     private Integer idVehiculeOccupant;
 
     public Segment(int id) {
@@ -15,37 +13,22 @@ public class Segment {
         this.idVehiculeOccupant = null;
     }
 
-    public Segment(int id, ReentrantLock verrou, Integer idVehiculeOccupant) {
-        this.id = id;
-        this.verrou = new ReentrantLock();
-        this.idVehiculeOccupant = null;
-    }
-
-    /**
-     * Réservation bloquante (Typiquement pour une Voiture)
-     * Le thread s'endort ici tant que le verrou n'est pas disponible.
-     */
-    public void reserver(int idVehicule) {
+    // Réservation bloquante (pour une voiture)
+    public void reserver(int id) {
         verrou.lock();
-        idVehiculeOccupant = idVehicule;
+        this.idVehiculeOccupant = id;
     }
 
-    /**
-     * Réservation conditionnelle (Typiquement pour un Camion)
-     * @return true si le verrou a été acquis, false s'il était déjà pris.
-     */
-    public boolean tryReserver(int idVehicule) {
+    // Réservation non bloquante (pour un camion afin d'éviter les interblocages)
+    public boolean tryReserver(int id) {
         if (verrou.tryLock()) {
-            idVehiculeOccupant = idVehicule;
+            this.idVehiculeOccupant = id;
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
-    /**
-     * Libération du segment par le véhicule sortant
-     */
+    // Libération du segment quand le véhicule le quitte
     public void liberer() {
         this.idVehiculeOccupant = null;
         verrou.unlock();
