@@ -90,8 +90,8 @@ public class Main {
         }
         pause(1000);
 
-        System.out.print("\033[12;1HSimulation terminee.\n");
-        System.out.flush();
+        affichage.marquerTerminee();
+        System.out.println("Simulation terminee.");
         gestionnaire.arreter();
     }
 
