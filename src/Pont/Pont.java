@@ -50,7 +50,7 @@ public class Pont {
         this.fileAttenteFIFO = null;
     }
 
-    // 1. Barrière d'entrée des véhicules
+    // Barrière d'entrée des véhicules
     public void entrer() throws InterruptedException {
         verrouGlobal.lock();
         try {
@@ -63,7 +63,7 @@ public class Pont {
         }
     }
 
-    // 2. Détecteur de pont vide à la sortie d'un véhicule
+    // Détecteur de pont vide à la sortie d'un véhicule
     public void sortir() {
         verrouGlobal.lock();
         try {
@@ -76,7 +76,7 @@ public class Pont {
         }
     }
 
-    // 3. Transition vers les bateaux (ouverture du pont)
+    // Transition vers les bateaux (ouverture du pont)
     public void demanderOuverture() throws InterruptedException {
         verrouGlobal.lock();
         try {
@@ -101,7 +101,7 @@ public class Pont {
         }
     }
 
-    // 4. Relance du trafic terrestre et temporisation d'une minute
+    // Relance du trafic terrestre et temporisation d'une minute
     public void fermer() {
         verrouGlobal.lock();
         try {
